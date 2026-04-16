@@ -1,9 +1,9 @@
-import { v2 as cloudinary } from "cloudinary";
-
 export const filesToBody = async (req, res, next) => {
   try {
-    if (req.files && req.files.length > 0) {
-      const uploadPromises = req.files.map((file) => {
+    const allFiles = Object.values(req.files || {}).flat();
+
+    if (allFiles.length > 0) {
+      const uploadPromises = allFiles.map((file) => {
         return new Promise((resolve, reject) => {
           const stream = cloudinary.uploader.upload_stream(
             {
@@ -17,7 +17,6 @@ export const filesToBody = async (req, res, next) => {
             }
           );
 
-          // Upload the file buffer to Cloudinary
           stream.end(file.buffer);
         });
       });
@@ -25,15 +24,7 @@ export const filesToBody = async (req, res, next) => {
       const uploadedFiles = await Promise.all(uploadPromises);
 
       uploadedFiles.forEach(({ field, url }) => {
-        if (req.body[field]) {
-          if (Array.isArray(req.body[field])) {
-            req.body[field].push(url);
-          } else {
-            req.body[field] = [req.body[field], url];
-          }
-        } else {
-          req.body[field] = url;
-        }
+        req.body[field] = url;
       });
     }
 
