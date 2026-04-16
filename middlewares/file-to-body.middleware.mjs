@@ -17,6 +17,7 @@ export const filesToBody = async (req, res, next) => {
             }
           );
 
+          // Upload the file buffer to Cloudinary
           stream.end(file.buffer);
         });
       });
